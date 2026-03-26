@@ -1,7 +1,16 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from db import init_db
 
-app = FastAPI(title="Priority Validator API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+
+app = FastAPI(title="Priority Validator API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
