@@ -24,13 +24,24 @@ export default function SettingsModal({ userName, open, onClose, onSaved }: Prop
 
   useEffect(() => {
     if (open && userName) {
-      getSettings(userName).then(setStatus).catch(() => setStatus(null));
+      // Reset key fields so "Configured" badge shows correctly
+      setLlmKey("");
+      setTavilyKey("");
+      getSettings(userName)
+        .then((s) => {
+          setStatus(s);
+          setProvider(s.llm_provider);
+          setModel(s.llm_model);
+        })
+        .catch(() => setStatus(null));
     }
   }, [open, userName]);
 
   if (!open) return null;
 
   const models = LLM_MODELS[provider] || [];
+  const llmConfigured = status?.has_llm_key && !llmKey;
+  const tavilyConfigured = status?.has_tavily_key && !tavilyKey;
 
   async function handleSave() {
     setSaving(true);
@@ -60,14 +71,6 @@ export default function SettingsModal({ userName, open, onClose, onSaved }: Prop
         </div>
         <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">Both API keys are required to run the application. Configure your LLM and Tavily keys below.</p>
 
-        {status && (
-          <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
-            <p>Provider: <span className="font-medium">{status.llm_provider}</span> / {status.llm_model}</p>
-            <p>LLM Key: {status.has_llm_key ? <span className="text-green-600">configured</span> : <span className="text-red-500">missing</span>}</p>
-            <p>Tavily Key: {status.has_tavily_key ? <span className="text-green-600">configured</span> : <span className="text-red-500">missing</span>}</p>
-          </div>
-        )}
-
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">LLM Provider</label>
@@ -93,32 +96,56 @@ export default function SettingsModal({ userName, open, onClose, onSaved }: Prop
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">LLM API Key</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">LLM API Key</label>
+              {llmConfigured && (
+                <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">Configured</span>
+              )}
+            </div>
             <input
               type="password"
               value={llmKey}
               onChange={(e) => setLlmKey(e.target.value)}
-              placeholder="sk-..."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder={llmConfigured ? "••••••••••••••••" : "sk-..."}
+              className={`w-full rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                llmConfigured
+                  ? "border-green-300 bg-green-50/50"
+                  : "border-gray-300"
+              }`}
             />
+            {llmConfigured && (
+              <p className="text-xs text-gray-500 mt-1">Key already saved. Enter a new value to update it.</p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tavily API Key</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">Tavily API Key</label>
+              {tavilyConfigured && (
+                <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">Configured</span>
+              )}
+            </div>
             <input
               type="password"
               value={tavilyKey}
               onChange={(e) => setTavilyKey(e.target.value)}
-              placeholder="tvly-..."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder={tavilyConfigured ? "••••••••••••••••" : "tvly-..."}
+              className={`w-full rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                tavilyConfigured
+                  ? "border-green-300 bg-green-50/50"
+                  : "border-gray-300"
+              }`}
             />
+            {tavilyConfigured && (
+              <p className="text-xs text-gray-500 mt-1">Key already saved. Enter a new value to update it.</p>
+            )}
           </div>
         </div>
 
         <button
           onClick={handleSave}
           disabled={saving}
-          className="mt-6 w-full bg-blue-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="mt-6 w-full bg-blue-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {saving ? "Saving..." : "Save Settings"}
         </button>
