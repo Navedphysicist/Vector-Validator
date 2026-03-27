@@ -9,6 +9,7 @@ interface Props {
 export default function FeedbackForm({ userName, onSubmit, submitted }: Props) {
   const [comment, setComment] = useState("");
   const [selected, setSelected] = useState<boolean | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   if (submitted) {
     return (
@@ -18,8 +19,18 @@ export default function FeedbackForm({ userName, onSubmit, submitted }: Props) {
     );
   }
 
+  if (submitting) {
+    return (
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-center gap-3">
+        <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <p className="text-blue-700 font-medium">Capturing feedback...</p>
+      </div>
+    );
+  }
+
   function handleSubmit() {
     if (selected === null) return;
+    setSubmitting(true);
     onSubmit(selected, comment);
   }
 
@@ -32,20 +43,20 @@ export default function FeedbackForm({ userName, onSubmit, submitted }: Props) {
           <div className="flex gap-3">
             <button
               onClick={() => setSelected(true)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
                 selected === true
                   ? "bg-green-100 border-green-500 text-green-700"
-                  : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50"
+                  : "bg-white border-gray-300 text-gray-600 hover:bg-green-50 hover:border-green-300 hover:text-green-700"
               }`}
             >
               Looks Good
             </button>
             <button
               onClick={() => setSelected(false)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
                 selected === false
                   ? "bg-red-100 border-red-500 text-red-700"
-                  : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50"
+                  : "bg-white border-gray-300 text-gray-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
               }`}
             >
               Needs Adjustment
@@ -69,7 +80,7 @@ export default function FeedbackForm({ userName, onSubmit, submitted }: Props) {
         <button
           onClick={handleSubmit}
           disabled={selected === null}
-          className="w-full bg-gray-900 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-gray-900 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           Submit Feedback
         </button>

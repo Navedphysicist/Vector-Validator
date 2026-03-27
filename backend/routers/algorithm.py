@@ -63,6 +63,7 @@ async def run_algorithm(req: RunAlgorithmRequest):
 
     return RunAlgorithmResponse(
         role_family=role_family["name"],
+        tiers=tiers,
         p1=priority[0],
         p2=priority[1],
         p3=priority[2],

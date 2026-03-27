@@ -7,7 +7,7 @@ import FeedbackSidebar from "./components/FeedbackSidebar";
 import SettingsModal from "./components/SettingsModal";
 import { getUserName, setUserName } from "./stores/settings";
 import { analyze, runAlgorithm, submitFeedback, getFeedback } from "./lib/api";
-import type { AnalyzeResponse, RunAlgorithmResponse } from "./lib/types";
+import type { AnalyzeResponse, RunAlgorithmResponse, FeedbackItem } from "./lib/types";
 
 type Step = "input" | "vectors" | "result" | "feedback";
 
@@ -26,13 +26,14 @@ function App() {
   const [analyzing, setAnalyzing] = useState(false);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState("");
-  const [feedbackCount, setFeedbackCount] = useState(0);
+  const [newFeedbackCount, setNewFeedbackCount] = useState(0);
+  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
 
   useEffect(() => {
     if (!getUserName()) {
       setShowNamePrompt(true);
     } else {
-      getFeedback(100).then((items) => setFeedbackCount(items.length)).catch(() => {});
+      getFeedback(100).then(setFeedbackItems).catch(() => {});
     }
   }, []);
 
@@ -104,7 +105,23 @@ function App() {
         user_name: userName,
       });
       setFeedbackSubmitted(true);
-      setFeedbackCount((c) => c + 1);
+      setNewFeedbackCount((c) => c + 1);
+      setFeedbackItems((prev) => [{
+        id: crypto.randomUUID(),
+        company,
+        industry: vectors.industry,
+        business_model: vectors.business_model,
+        transaction_platform: vectors.transaction_platform,
+        role,
+        role_family: result.role_family,
+        p1: result.p1,
+        p2: result.p2,
+        p3: result.p3,
+        is_correct: isCorrect,
+        comment: comment || undefined,
+        user_name: userName,
+        created_at: new Date().toISOString(),
+      }, ...prev]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to submit feedback");
     }
@@ -123,7 +140,10 @@ function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <form onSubmit={handleNameSubmit} className="bg-white rounded-xl shadow-lg p-10 w-full max-w-sm">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Vector Validator</h1>
+          <div className="flex items-center gap-3 mb-1">
+            <img src="/logo.svg" alt="Vector Validator" className="w-9 h-9" />
+            <h1 className="text-2xl font-bold text-gray-900">Vector Validator</h1>
+          </div>
           <p className="text-sm text-gray-500 mb-8">Validate executive search priority vectors</p>
           <label className="block text-sm font-medium text-gray-700 mb-1">What's your name?</label>
           <input
@@ -151,20 +171,23 @@ function App() {
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-30">
         <div className="max-w-2xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">Vector Validator</h1>
-            <p className="text-xs text-gray-500">Signed in as {userName}</p>
+          <div className="flex items-center gap-3">
+            <img src="/logo.svg" alt="Vector Validator" className="w-8 h-8" />
+            <div>
+              <h1 className="text-lg font-bold text-gray-900">Vector Validator</h1>
+              <p className="text-xs text-gray-500">Signed in as {userName}</p>
+            </div>
           </div>
           <div className="flex gap-2 items-center">
             <button
-              onClick={() => setShowSidebar(true)}
+              onClick={() => { setShowSidebar(true); setNewFeedbackCount(0); }}
               className="relative text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium"
               title="View history"
             >
               History
-              {feedbackCount > 0 && (
+              {newFeedbackCount > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center px-1">
-                  {feedbackCount}
+                  {newFeedbackCount}
                 </span>
               )}
             </button>
@@ -220,6 +243,7 @@ function App() {
             p2={result.p2}
             p3={result.p3}
             vectors={vectors}
+            tiers={result.tiers}
           />
         )}
 
@@ -250,7 +274,7 @@ function App() {
         onClose={() => setShowSettings(false)}
         onSaved={() => {}}
       />
-      <FeedbackSidebar open={showSidebar} onClose={() => setShowSidebar(false)} />
+      <FeedbackSidebar open={showSidebar} onClose={() => setShowSidebar(false)} items={feedbackItems} />
     </div>
   );
 }

@@ -53,8 +53,8 @@ Now classify these three values:
 Rules:
 - If a value exactly matches or closely matches a known Common value, classify as Common
 - If a value exactly matches or closely matches a known Unique value, classify as Unique
-- If a value is NOT in either list, use your judgment based on the definitions above
-- When uncertain, lean toward Common unless the attribute is clearly highly specialized
+- If a value is NOT in either list, use your judgment based on the definitions above and your training data
+- When uncertain, lean toward Unique — it is safer to treat an attribute as specialized than to miss a genuinely unique characteristic
 
 Return ONLY valid JSON with no other text:
 {{"businessModel": "Common" or "Unique", "industry": "Common" or "Unique", "transactionPlatform": "Common" or "Unique", "reasoning": "One sentence explaining each classification"}}"""

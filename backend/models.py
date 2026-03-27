@@ -25,6 +25,7 @@ class RunAlgorithmRequest(BaseModel):
 
 class RunAlgorithmResponse(BaseModel):
     role_family: str
+    tiers: dict[str, str]
     p1: str
     p2: str
     p3: str

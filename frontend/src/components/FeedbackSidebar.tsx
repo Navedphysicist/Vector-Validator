@@ -1,26 +1,12 @@
-import { useState, useEffect } from "react";
-import { getFeedback } from "../lib/api";
 import type { FeedbackItem } from "../lib/types";
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  items: FeedbackItem[];
 }
 
-export default function FeedbackSidebar({ open, onClose }: Props) {
-  const [items, setItems] = useState<FeedbackItem[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (open) {
-      setLoading(true);
-      getFeedback(100)
-        .then(setItems)
-        .catch(() => setItems([]))
-        .finally(() => setLoading(false));
-    }
-  }, [open]);
-
+export default function FeedbackSidebar({ open, onClose, items }: Props) {
   if (!open) return null;
 
   return (
@@ -32,9 +18,7 @@ export default function FeedbackSidebar({ open, onClose }: Props) {
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
         </div>
 
-        {loading ? (
-          <div className="p-6 text-center text-gray-500">Loading...</div>
-        ) : items.length === 0 ? (
+        {items.length === 0 ? (
           <div className="p-6 text-center text-gray-500">No feedback submitted yet.</div>
         ) : (
           <div className="overflow-x-auto">

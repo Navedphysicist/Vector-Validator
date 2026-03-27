@@ -20,6 +20,7 @@ export interface RunAlgorithmRequest {
 
 export interface RunAlgorithmResponse {
   role_family: string;
+  tiers: Record<string, string>;
   p1: string;
   p2: string;
   p3: string;

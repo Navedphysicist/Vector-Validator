@@ -28,8 +28,8 @@ function EditableField({ label, value, onChange }: { label: string; value: strin
           autoFocus
           className="flex-1 border border-blue-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500"
         />
-        <button onClick={save} className="text-blue-600 text-sm font-medium">Save</button>
-        <button onClick={() => setEditing(false)} className="text-gray-400 text-sm">Cancel</button>
+        <button onClick={save} className="text-blue-600 text-sm font-medium hover:text-blue-800 hover:underline transition-colors">Save</button>
+        <button onClick={() => setEditing(false)} className="text-gray-400 text-sm hover:text-gray-600 hover:underline transition-colors">Cancel</button>
       </div>
     );
   }

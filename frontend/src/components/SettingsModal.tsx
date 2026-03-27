@@ -54,10 +54,11 @@ export default function SettingsModal({ userName, open, onClose, onSaved }: Prop
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-2">
           <h2 className="text-xl font-semibold text-gray-900">Settings</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
         </div>
+        <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">Both API keys are required to run the application. Configure your LLM and Tavily keys below.</p>
 
         {status && (
           <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
