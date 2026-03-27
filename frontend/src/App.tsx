@@ -246,7 +246,7 @@ function App() {
         {feedbackSubmitted && (
           <button
             onClick={handleReset}
-            className="w-full border border-gray-300 text-gray-700 rounded-lg py-2.5 text-sm font-medium hover:bg-gray-50"
+            className="w-full bg-blue-600 text-white rounded-lg py-3 text-sm font-semibold hover:bg-blue-700 transition-colors"
           >
             Test Another Company
           </button>
