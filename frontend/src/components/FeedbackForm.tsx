@@ -13,7 +13,7 @@ export default function FeedbackForm({ userName, onSubmit, submitted }: Props) {
   if (submitted) {
     return (
       <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-        <p className="text-green-700 font-medium">Feedback submitted. Thank you!</p>
+        <p className="text-green-700 font-medium">Thanks for your feedback! Check the History sidebar to see your entry.</p>
       </div>
     );
   }
@@ -28,7 +28,7 @@ export default function FeedbackForm({ userName, onSubmit, submitted }: Props) {
       <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Feedback</h3>
       <div className="bg-gray-50 rounded-lg p-4 space-y-4">
         <div>
-          <p className="text-sm text-gray-700 mb-2">Is this priority order correct?</p>
+          <p className="text-sm text-gray-700 mb-2">How does this ranking look?</p>
           <div className="flex gap-3">
             <button
               onClick={() => setSelected(true)}
@@ -38,7 +38,7 @@ export default function FeedbackForm({ userName, onSubmit, submitted }: Props) {
                   : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50"
               }`}
             >
-              Yes, correct
+              Looks Good
             </button>
             <button
               onClick={() => setSelected(false)}
@@ -48,7 +48,7 @@ export default function FeedbackForm({ userName, onSubmit, submitted }: Props) {
                   : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50"
               }`}
             >
-              No, incorrect
+              Needs Adjustment
             </button>
           </div>
         </div>
