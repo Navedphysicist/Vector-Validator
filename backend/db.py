@@ -83,14 +83,16 @@ def get_feedback(limit: int = 100) -> list[dict]:
 def upsert_settings(user_name: str, settings: dict):
     conn = get_connection()
     cur = conn.cursor()
+    # Only update API keys if a new value is provided (not None/empty)
+    # This prevents overwriting saved keys when the user doesn't re-enter them
     cur.execute("""
         INSERT INTO user_settings (user_name, llm_provider, llm_model, llm_api_key, tavily_api_key, updated_at)
         VALUES (%(user_name)s, %(llm_provider)s, %(llm_model)s, %(llm_api_key)s, %(tavily_api_key)s, NOW())
         ON CONFLICT (user_name) DO UPDATE SET
             llm_provider = EXCLUDED.llm_provider,
             llm_model = EXCLUDED.llm_model,
-            llm_api_key = EXCLUDED.llm_api_key,
-            tavily_api_key = EXCLUDED.tavily_api_key,
+            llm_api_key = CASE WHEN EXCLUDED.llm_api_key IS NOT NULL THEN EXCLUDED.llm_api_key ELSE user_settings.llm_api_key END,
+            tavily_api_key = CASE WHEN EXCLUDED.tavily_api_key IS NOT NULL THEN EXCLUDED.tavily_api_key ELSE user_settings.tavily_api_key END,
             updated_at = NOW()
     """, {**settings, "user_name": user_name})
     conn.commit()
