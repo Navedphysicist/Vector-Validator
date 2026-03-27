@@ -44,6 +44,8 @@ function App() {
       setUserNameState(userName.trim());
       setShowNamePrompt(false);
       setShowSettings(true);
+      // Fetch history now that the user is logged in
+      getFeedback(100).then(setFeedbackItems).catch(() => {});
     }
   }
 
