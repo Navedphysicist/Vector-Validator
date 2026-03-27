@@ -194,6 +194,14 @@ function App() {
         {/* Step 1: Input */}
         <CompanyRoleInput onAnalyze={handleAnalyze} loading={analyzing} disabled={false} />
 
+        {/* Analysis loading indicator */}
+        {analyzing && (
+          <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm text-gray-600">Analyzing vectors for <span className="font-medium text-gray-900">{company}</span>...</span>
+          </div>
+        )}
+
         {/* Step 2: Vectors */}
         {vectors && step !== "input" && (
           <VectorDisplay
