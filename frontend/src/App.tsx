@@ -6,7 +6,7 @@ import FeedbackForm from "./components/FeedbackForm";
 import FeedbackSidebar from "./components/FeedbackSidebar";
 import SettingsModal from "./components/SettingsModal";
 import { getUserName, setUserName } from "./stores/settings";
-import { analyze, runAlgorithm, submitFeedback } from "./lib/api";
+import { analyze, runAlgorithm, submitFeedback, getFeedback } from "./lib/api";
 import type { AnalyzeResponse, RunAlgorithmResponse } from "./lib/types";
 
 type Step = "input" | "vectors" | "result" | "feedback";
@@ -26,9 +26,14 @@ function App() {
   const [analyzing, setAnalyzing] = useState(false);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState("");
+  const [feedbackCount, setFeedbackCount] = useState(0);
 
   useEffect(() => {
-    if (!getUserName()) setShowNamePrompt(true);
+    if (!getUserName()) {
+      setShowNamePrompt(true);
+    } else {
+      getFeedback(100).then((items) => setFeedbackCount(items.length)).catch(() => {});
+    }
   }, []);
 
   function handleNameSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -99,6 +104,7 @@ function App() {
         user_name: userName,
       });
       setFeedbackSubmitted(true);
+      setFeedbackCount((c) => c + 1);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to submit feedback");
     }
@@ -143,21 +149,24 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b">
+      <header className="bg-white border-b sticky top-0 z-30">
         <div className="max-w-2xl mx-auto px-4 py-4 flex justify-between items-center">
           <div>
             <h1 className="text-lg font-bold text-gray-900">Vector Validator</h1>
             <p className="text-xs text-gray-500">Signed in as {userName}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <button
               onClick={() => setShowSidebar(true)}
-              className="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100"
+              className="relative text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium"
               title="View history"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
+              History
+              {feedbackCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center px-1">
+                  {feedbackCount}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setShowSettings(true)}
