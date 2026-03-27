@@ -117,7 +117,7 @@ function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <form onSubmit={handleNameSubmit} className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Priority Validator</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Vector Validator</h1>
           <p className="text-sm text-gray-500 mb-6">Enter your name to get started.</p>
           <input
             type="text"
@@ -145,7 +145,7 @@ function App() {
       <header className="bg-white border-b">
         <div className="max-w-2xl mx-auto px-4 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-lg font-bold text-gray-900">Priority Validator</h1>
+            <h1 className="text-lg font-bold text-gray-900">Vector Validator</h1>
             <p className="text-xs text-gray-500">Signed in as {userName}</p>
           </div>
           <div className="flex gap-2">

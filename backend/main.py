@@ -11,7 +11,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Priority Validator API", lifespan=lifespan)
+app = FastAPI(title="Vector Validator API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
