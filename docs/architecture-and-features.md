@@ -1,8 +1,32 @@
-# How Vector Validator Works
+# Vector Validator -- Architecture and Features
 
 ## Overview
 
 Vector Validator helps executive search firms determine which company attributes matter most when sourcing candidates for a given role. It answers: **"For this role at this company, should we prioritize Business Model experience, Industry experience, or Transaction Platform experience?"**
+
+## Features
+
+### Working Features
+- **AI-Powered Company Analysis** -- Enter a company name and the app automatically researches it via Tavily web search, then extracts three business vectors (Business Model, Industry, Transaction Platform) using an LLM
+- **Editable Vectors** -- Users can review and correct the AI-extracted vectors before running the algorithm
+- **Role Family Classification** -- Automatically maps role titles to 10 role families using keyword matching with LLM fallback
+- **Common/Unique Vector Classification** -- Each vector is classified against a curated taxonomy of ~110 values, with the LLM leaning toward Unique when uncertain
+- **Priority Algorithm** -- Deterministic algorithm that promotes Unique vectors to higher priority positions (validated against 97 test cases from the matching-engine spreadsheet)
+- **Stacked Result Display** -- Shows Role Family, Unique Vectors callout (with full names like "Transaction Platform: Embedded (API-based)"), and Final Prioritization (P1 > P2 > P3)
+- **Feedback Collection** -- Users submit "Looks Good" / "Needs Adjustment" with optional comments, stored in PostgreSQL
+- **Validation History** -- Sidebar showing all past validations with cached data (no refetch on open)
+- **Notification Badge** -- History button shows a badge for new feedback entries, resets when sidebar is opened
+- **Per-User Settings** -- Each user configures their own LLM provider (OpenAI/Groq), model, and API keys
+- **Multi-Provider LLM Support** -- OpenAI (gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo) and Groq (llama-4-scout, llama-3.3-70b, mixtral-8x7b)
+- **Loading States** -- Spinner with "Analyzing vectors for {company}..." during analysis, "Capturing feedback..." during submission
+- **Sticky Navbar** -- Stays visible on scroll with logo, user name, History button, and Settings gear
+- **API Keys Warning** -- Settings modal warns that both keys are required to run the app
+
+### Design Decisions
+- **Lean toward Unique** -- When the LLM is uncertain whether a vector is Common or Unique, it leans toward Unique. Safer to treat an attribute as specialized than to miss a genuinely unique characteristic.
+- **Taxonomy as vocabulary** -- The full Common/Unique taxonomy is embedded in both LLM prompts (extraction and classification) to constrain outputs to a controlled vocabulary
+- **Deterministic algorithm** -- The priority calculation is pure Python logic with no LLM involvement, ensuring consistent and reproducible results
+- **Optimistic UI** -- Feedback is added to the sidebar cache immediately without waiting for a refetch
 
 ## The Three Business Vectors
 
