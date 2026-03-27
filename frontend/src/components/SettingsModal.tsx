@@ -4,7 +4,7 @@ import type { SettingsStatus } from "../lib/types";
 
 const LLM_MODELS: Record<string, string[]> = {
   openai: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
-  groq: ["llama-4-scout-17b-16e-instruct", "llama-3.3-70b-versatile", "mixtral-8x7b-32768"],
+  groq: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"],
 };
 
 interface Props {

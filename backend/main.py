@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from db import init_db
 from routers import settings, analyze, algorithm, feedback
 
+is_vercel = bool(os.getenv("VERCEL"))
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -12,13 +14,11 @@ async def lifespan(app: FastAPI):
     yield
 
 
-# On Vercel, routes are served under /api via serverless function
-root_path = "/api" if os.getenv("VERCEL") else ""
-
-app = FastAPI(title="Vector Validator API", lifespan=lifespan, root_path=root_path)
+app = FastAPI(title="Vector Validator API", lifespan=lifespan)
 
 allowed_origins = [
     "http://localhost:5173",
+    "https://*.vercel.app",
 ]
 
 # Add Vercel deployment URL if set
@@ -33,18 +33,22 @@ if production_url:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"] if is_vercel else allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(settings.router)
-app.include_router(analyze.router)
-app.include_router(algorithm.router)
-app.include_router(feedback.router)
+# On Vercel, requests arrive as /api/analyze, /api/settings, etc.
+# Locally (via Vite proxy), requests arrive as /analyze, /settings, etc.
+prefix = "/api" if is_vercel else ""
+
+app.include_router(settings.router, prefix=prefix)
+app.include_router(analyze.router, prefix=prefix)
+app.include_router(algorithm.router, prefix=prefix)
+app.include_router(feedback.router, prefix=prefix)
 
 
-@app.get("/health")
+@app.get(f"{prefix}/health")
 async def health():
     return {"status": "ok"}
