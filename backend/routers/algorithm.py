@@ -1,6 +1,6 @@
+import os
 from fastapi import APIRouter, HTTPException
 from models import RunAlgorithmRequest, RunAlgorithmResponse
-from db import get_settings
 from services.role_families import classify_role, ROLE_FAMILIES
 from services.algorithm_service import calculate_priority
 from services.llm_service import call_llm
@@ -8,20 +8,15 @@ from services.prompts import tier_classification_prompt, role_classification_pro
 
 router = APIRouter()
 
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "openai")
+LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o")
+LLM_API_KEY = os.getenv("LLM_API_KEY", "")
+
 
 @router.post("/run-algorithm", response_model=RunAlgorithmResponse)
 async def run_algorithm(req: RunAlgorithmRequest):
-    # Get user's API keys
-    settings = get_settings(req.user_name)
-    if not settings:
-        raise HTTPException(status_code=400, detail="Please configure your API keys in Settings first")
-
-    llm_key = settings.get("llm_api_key")
-    provider = settings.get("llm_provider", "openai")
-    model = settings.get("llm_model", "gpt-4o")
-
-    if not llm_key:
-        raise HTTPException(status_code=400, detail="LLM API key not configured")
+    if not LLM_API_KEY:
+        raise HTTPException(status_code=500, detail="LLM API key not configured on server")
 
     # Step 1: Classify role → role family
     role_family = classify_role(req.role)
@@ -30,7 +25,7 @@ async def run_algorithm(req: RunAlgorithmRequest):
         # LLM fallback for ambiguous roles
         try:
             prompt = role_classification_prompt(req.role)
-            result = call_llm(provider, model, llm_key, prompt)
+            result = call_llm(LLM_PROVIDER, LLM_MODEL, LLM_API_KEY, prompt)
             family_name = result.get("roleFamily", "")
 
             # Find matching family
@@ -40,7 +35,6 @@ async def run_algorithm(req: RunAlgorithmRequest):
                     break
 
             if not role_family:
-                # Default to Operations / General Mgmt
                 role_family = next(f for f in ROLE_FAMILIES if f["name"] == "Operations / General Mgmt")
         except ValueError:
             role_family = next(f for f in ROLE_FAMILIES if f["name"] == "Operations / General Mgmt")
@@ -48,7 +42,7 @@ async def run_algorithm(req: RunAlgorithmRequest):
     # Step 2: Classify tiers via LLM
     try:
         prompt = tier_classification_prompt(req.business_model, req.industry, req.transaction_platform)
-        tier_result = call_llm(provider, model, llm_key, prompt)
+        tier_result = call_llm(LLM_PROVIDER, LLM_MODEL, LLM_API_KEY, prompt)
     except ValueError as e:
         raise HTTPException(status_code=502, detail=str(e))
 

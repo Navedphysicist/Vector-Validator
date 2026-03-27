@@ -4,7 +4,6 @@ import VectorDisplay from "./components/VectorDisplay";
 import AlgorithmResult from "./components/AlgorithmResult";
 import FeedbackForm from "./components/FeedbackForm";
 import FeedbackSidebar from "./components/FeedbackSidebar";
-import SettingsModal from "./components/SettingsModal";
 import { getUserName, setUserName } from "./stores/settings";
 import { analyze, runAlgorithm, submitFeedback, getFeedback } from "./lib/api";
 import type { AnalyzeResponse, RunAlgorithmResponse, FeedbackItem } from "./lib/types";
@@ -14,7 +13,6 @@ type Step = "input" | "vectors" | "result" | "feedback";
 function App() {
   const [userName, setUserNameState] = useState(getUserName() || "");
   const [showNamePrompt, setShowNamePrompt] = useState(!getUserName());
-  const [showSettings, setShowSettings] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
 
   const [step, setStep] = useState<Step>("input");
@@ -43,8 +41,6 @@ function App() {
       setUserName(userName.trim());
       setUserNameState(userName.trim());
       setShowNamePrompt(false);
-      setShowSettings(true);
-      // Fetch history now that the user is logged in
       getFeedback(100).then(setFeedbackItems).catch(() => {});
     }
   }
@@ -180,30 +176,18 @@ function App() {
               <p className="text-xs text-gray-500">Signed in as {userName}</p>
             </div>
           </div>
-          <div className="flex gap-2 items-center">
-            <button
-              onClick={() => { setShowSidebar(true); setNewFeedbackCount(0); }}
-              className="relative text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium"
-              title="View history"
-            >
-              History
-              {newFeedbackCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center px-1">
-                  {newFeedbackCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setShowSettings(true)}
-              className="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100"
-              title="Settings"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-          </div>
+          <button
+            onClick={() => { setShowSidebar(true); setNewFeedbackCount(0); }}
+            className="relative text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium"
+            title="View history"
+          >
+            History
+            {newFeedbackCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center px-1">
+                {newFeedbackCount}
+              </span>
+            )}
+          </button>
         </div>
       </header>
 
@@ -269,13 +253,6 @@ function App() {
         )}
       </main>
 
-      {/* Modals */}
-      <SettingsModal
-        userName={userName}
-        open={showSettings}
-        onClose={() => setShowSettings(false)}
-        onSaved={() => {}}
-      />
       <FeedbackSidebar open={showSidebar} onClose={() => setShowSidebar(false)} items={feedbackItems} />
     </div>
   );

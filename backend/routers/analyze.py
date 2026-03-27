@@ -1,32 +1,27 @@
+import os
 from fastapi import APIRouter, HTTPException
 from models import AnalyzeRequest, AnalyzeResponse
-from db import get_settings
 from services.tavily_service import search_company
 from services.llm_service import call_llm
 from services.prompts import vector_extraction_prompt
 
 router = APIRouter()
 
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "openai")
+LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o")
+LLM_API_KEY = os.getenv("LLM_API_KEY", "")
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
+
 
 @router.post("/analyze", response_model=AnalyzeResponse)
 async def analyze(req: AnalyzeRequest):
-    # Get user's API keys
-    settings = get_settings(req.user_name)
-    if not settings:
-        raise HTTPException(status_code=400, detail="Please configure your API keys in Settings first")
-
-    tavily_key = settings.get("tavily_api_key")
-    llm_key = settings.get("llm_api_key")
-    provider = settings.get("llm_provider", "openai")
-    model = settings.get("llm_model", "gpt-4o")
-
-    if not tavily_key:
-        raise HTTPException(status_code=400, detail="Tavily API key not configured")
-    if not llm_key:
-        raise HTTPException(status_code=400, detail="LLM API key not configured")
+    if not TAVILY_API_KEY:
+        raise HTTPException(status_code=500, detail="Tavily API key not configured on server")
+    if not LLM_API_KEY:
+        raise HTTPException(status_code=500, detail="LLM API key not configured on server")
 
     # Search for company info
-    tavily_results = await search_company(req.company, tavily_key)
+    tavily_results = await search_company(req.company, TAVILY_API_KEY)
 
     if not tavily_results:
         raise HTTPException(
@@ -38,7 +33,7 @@ async def analyze(req: AnalyzeRequest):
     prompt = vector_extraction_prompt(req.company, tavily_results)
 
     try:
-        result = call_llm(provider, model, llm_key, prompt)
+        result = call_llm(LLM_PROVIDER, LLM_MODEL, LLM_API_KEY, prompt)
     except ValueError as e:
         raise HTTPException(status_code=502, detail=str(e))
 

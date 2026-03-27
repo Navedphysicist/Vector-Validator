@@ -25,9 +25,9 @@ export default function AlgorithmResult({ roleFamily, p1, p2, p3, vectors, tiers
     .map(([name]) => name);
 
   const priorities = [
-    { label: "P1", value: p1, border: "border-blue-500", badge: "bg-blue-600 text-white", text: "text-gray-900", tag: "Highest Priority", tagColor: "text-blue-600 bg-blue-50" },
-    { label: "P2", value: p2, border: "border-gray-400", badge: "bg-gray-400 text-white", text: "text-gray-700", tag: null, tagColor: "" },
-    { label: "P3", value: p3, border: "border-gray-300", badge: "bg-gray-300 text-gray-600", text: "text-gray-500", tag: null, tagColor: "" },
+    { label: "P1", value: p1, border: "border-blue-500", badge: "bg-blue-600 text-white", text: "text-gray-900" },
+    { label: "P2", value: p2, border: "border-gray-400", badge: "bg-gray-400 text-white", text: "text-gray-700" },
+    { label: "P3", value: p3, border: "border-gray-300", badge: "bg-gray-300 text-gray-600", text: "text-gray-500" },
   ];
 
   return (
@@ -61,29 +61,36 @@ export default function AlgorithmResult({ roleFamily, p1, p2, p3, vectors, tiers
       )}
 
       {/* Final Prioritization */}
-      <div>
-        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-2">Final Prioritization</h3>
-        <div className="space-y-2">
-          {priorities.map(({ label, value, border, badge, text, tag, tagColor }) => {
+      <div className="bg-white border-2 border-blue-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-blue-50 px-4 py-3 border-b border-blue-200">
+          <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wide">Final Prioritization</h3>
+        </div>
+        <div className="divide-y divide-gray-100">
+          {priorities.map(({ label, value, border, badge, text }, index) => {
             const vectorKey = VECTOR_MAP[value];
             const vectorValue = vectorKey ? vectors[vectorKey] : "";
             const isUnique = tiers[value] === "Unique";
+            const isP1 = index === 0;
             return (
               <div
                 key={label}
-                className={`flex items-center gap-3 bg-white rounded-lg px-4 py-3 border-l-4 ${border}`}
+                className={`flex items-center gap-3 px-4 py-3.5 border-l-4 ${border} ${isP1 ? "bg-blue-50/30" : ""}`}
               >
-                <span className={`text-xs font-bold px-2 py-0.5 rounded ${badge}`}>{label}</span>
-                <span className={`text-sm font-semibold ${text}`}>{value}</span>
-                {vectorValue && (
-                  <span className="text-sm text-gray-500">{vectorValue}</span>
-                )}
-                {isUnique && (
-                  <span className="text-xs font-medium px-2 py-0.5 rounded text-amber-700 bg-amber-50">Unique</span>
-                )}
-                {tag && (
-                  <span className={`ml-auto text-xs font-medium px-2 py-0.5 rounded ${tagColor}`}>{tag}</span>
-                )}
+                <span className={`text-xs font-bold px-2.5 py-1 rounded ${badge}`}>{label}</span>
+                <div className="flex-1 min-w-0">
+                  <span className={`text-sm font-semibold ${text}`}>{value}</span>
+                  {vectorValue && (
+                    <span className="text-sm text-gray-500 ml-2">{vectorValue}</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {isUnique && (
+                    <span className="text-xs font-medium px-2 py-0.5 rounded text-amber-700 bg-amber-50 border border-amber-200">Unique</span>
+                  )}
+                  {isP1 && (
+                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded text-blue-700 bg-blue-100 border border-blue-200">Highest Priority</span>
+                  )}
+                </div>
               </div>
             );
           })}

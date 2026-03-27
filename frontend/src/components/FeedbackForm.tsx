@@ -39,28 +39,40 @@ export default function FeedbackForm({ userName, onSubmit, submitted }: Props) {
       <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Feedback</h3>
       <div className="bg-gray-50 rounded-lg p-4 space-y-4">
         <div>
-          <p className="text-sm text-gray-700 mb-2">How does this ranking look?</p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setSelected(true)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+          <p className="text-sm text-gray-700 mb-3">How does this ranking look?</p>
+          <div className="space-y-2">
+            <label
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-colors ${
                 selected === true
-                  ? "bg-green-100 border-green-500 text-green-700"
-                  : "bg-white border-gray-300 text-gray-600 hover:bg-green-50 hover:border-green-300 hover:text-green-700"
+                  ? "bg-green-50 border-green-400"
+                  : "bg-white border-gray-200 hover:border-green-300 hover:bg-green-50/50"
               }`}
             >
-              Looks Good
-            </button>
-            <button
-              onClick={() => setSelected(false)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+              <input
+                type="radio"
+                name="feedback"
+                checked={selected === true}
+                onChange={() => setSelected(true)}
+                className="w-4 h-4 text-green-600 focus:ring-green-500"
+              />
+              <span className={`text-sm font-medium ${selected === true ? "text-green-700" : "text-gray-700"}`}>Looks Good</span>
+            </label>
+            <label
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-colors ${
                 selected === false
-                  ? "bg-red-100 border-red-500 text-red-700"
-                  : "bg-white border-gray-300 text-gray-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
+                  ? "bg-red-50 border-red-400"
+                  : "bg-white border-gray-200 hover:border-red-300 hover:bg-red-50/50"
               }`}
             >
-              Needs Adjustment
-            </button>
+              <input
+                type="radio"
+                name="feedback"
+                checked={selected === false}
+                onChange={() => setSelected(false)}
+                className="w-4 h-4 text-red-600 focus:ring-red-500"
+              />
+              <span className={`text-sm font-medium ${selected === false ? "text-red-700" : "text-gray-700"}`}>Needs Adjustment</span>
+            </label>
           </div>
         </div>
 
@@ -69,21 +81,22 @@ export default function FeedbackForm({ userName, onSubmit, submitted }: Props) {
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Why is this correct/incorrect?"
+            placeholder="Share your thoughts on this ranking..."
             rows={2}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
-        <div className="text-xs text-gray-500">Submitting as: <span className="font-medium">{userName}</span></div>
-
-        <button
-          onClick={handleSubmit}
-          disabled={selected === null}
-          className="w-full bg-gray-900 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          Submit Feedback
-        </button>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-500">Submitting as: <span className="font-medium">{userName}</span></span>
+          <button
+            onClick={handleSubmit}
+            disabled={selected === null}
+            className="bg-gray-900 text-white rounded-lg px-6 py-2 text-sm font-medium hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            Submit Feedback
+          </button>
+        </div>
       </div>
     </div>
   );
