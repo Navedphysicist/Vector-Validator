@@ -213,12 +213,13 @@ function App() {
         )}
 
         {/* Step 3: Result */}
-        {result && (step === "result" || feedbackSubmitted) && (
+        {result && vectors && (step === "result" || feedbackSubmitted) && (
           <AlgorithmResult
             roleFamily={result.role_family}
             p1={result.p1}
             p2={result.p2}
             p3={result.p3}
+            vectors={vectors}
           />
         )}
 
