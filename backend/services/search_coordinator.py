@@ -9,42 +9,63 @@ logger = logging.getLogger(__name__)
 
 async def search_company(company_name: str) -> str:
     """
-    1. Run Tavily to get web results
-    2. Use LLM to extract company domain from Tavily results
-    3. If Apollo is enabled, enrich using that domain
-    4. Merge both, deduplicate, and format for LLM
+    Apollo-first sequential fallback:
+    1. Apollo name search → domain
+    2. If no domain: Tavily web search → LLM extracts domain
+    3. If domain found: Apollo enrich → return Apollo data only
+    4. If no Apollo data: return Tavily web search results as fallback
     """
-    all_results = []
-    tavily_formatted = ""
-
-    # Step 1: Tavily search
+    apollo_enabled = os.getenv(apollo_source.ENV_ENABLED, "false").lower() == "true"
+    apollo_key = os.getenv(apollo_source.ENV_KEY, "")
     tavily_enabled = os.getenv(tavily_source.ENV_ENABLED, "false").lower() == "true"
     tavily_key = os.getenv(tavily_source.ENV_KEY, "")
 
+    domain = None
+    tavily_results = None  # cached so we don't call Tavily twice
+
+    # Level 1: Apollo name search for domain
+    if apollo_enabled and apollo_key:
+        try:
+            domain = await apollo_source.search_domain(company_name, apollo_key)
+        except Exception as e:
+            logger.warning(f"Apollo domain search failed: {e}")
+
+    # Level 2: Tavily + LLM for domain (only if Level 1 failed)
+    if not domain and tavily_enabled and tavily_key:
+        try:
+            tavily_results = await tavily_source.search_company(company_name, tavily_key)
+            if tavily_results:
+                tavily_formatted = _format_results(tavily_results)
+                domain = _extract_domain_via_llm(company_name, tavily_formatted)
+        except Exception as e:
+            logger.warning(f"Tavily domain lookup failed: {e}")
+
+    # Level 3: Apollo enrich with domain
+    if domain and apollo_enabled and apollo_key:
+        try:
+            apollo_results = await apollo_source.enrich_by_domain(domain, apollo_key)
+            if apollo_results:
+                logger.info(f"Using Apollo data for '{company_name}' (domain: {domain})")
+                return _format_results(apollo_results)
+        except Exception as e:
+            logger.warning(f"Apollo enrich failed: {e}")
+
+    # Level 4: Fallback to Tavily web search results
+    if tavily_results:
+        logger.info(f"Falling back to Tavily results for '{company_name}'")
+        return _format_results(tavily_results)
+
+    # Tavily not yet fetched — fetch now as last resort
     if tavily_enabled and tavily_key:
         try:
             tavily_results = await tavily_source.search_company(company_name, tavily_key)
-            all_results.extend(tavily_results)
-            tavily_formatted = _format_results(tavily_results)
+            if tavily_results:
+                logger.info(f"Falling back to Tavily results for '{company_name}'")
+                return _format_results(tavily_results)
         except Exception as e:
-            logger.warning(f"Tavily search failed: {e}")
+            logger.warning(f"Tavily fallback failed: {e}")
 
-    # Step 2: LLM extracts domain from Tavily results, then Apollo enriches
-    apollo_enabled = os.getenv(apollo_source.ENV_ENABLED, "false").lower() == "true"
-    apollo_key = os.getenv(apollo_source.ENV_KEY, "")
-
-    if apollo_enabled and apollo_key and tavily_formatted:
-        domain = _extract_domain_via_llm(company_name, tavily_formatted)
-        if domain:
-            logger.info(f"LLM extracted domain for '{company_name}': {domain}")
-            try:
-                apollo_results = await apollo_source.enrich_by_domain(domain, apollo_key)
-                all_results.extend(apollo_results)
-            except Exception as e:
-                logger.warning(f"Apollo enrich failed: {e}")
-
-    deduped = _deduplicate(all_results)
-    return _format_results(deduped)
+    return ""
 
 
 def _extract_domain_via_llm(company_name: str, search_results: str) -> str | None:
@@ -66,18 +87,6 @@ def _extract_domain_via_llm(company_name: str, search_results: str) -> str | Non
         logger.warning(f"LLM domain extraction failed: {e}")
 
     return None
-
-
-def _deduplicate(results: list[dict]) -> list[dict]:
-    """Remove results with duplicate titles. First occurrence wins."""
-    seen_titles = set()
-    deduped = []
-    for r in results:
-        title = r.get("title", "")
-        if title not in seen_titles:
-            seen_titles.add(title)
-            deduped.append(r)
-    return deduped
 
 
 def _format_results(results: list[dict]) -> str:

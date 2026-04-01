@@ -5,9 +5,40 @@ SOURCE_NAME = "Apollo"
 ENV_KEY = "APOLLO_API_KEY"
 ENV_ENABLED = "APOLLO_ENABLED"
 
+SEARCH_URL = "https://api.apollo.io/api/v1/mixed_companies/search"
 ENRICH_URL = "https://api.apollo.io/api/v1/organizations/enrich"
 
 logger = logging.getLogger(__name__)
+
+
+async def search_domain(company_name: str, api_key: str) -> str | None:
+    """Search Apollo for a company by name, return primary domain if found."""
+    headers = {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+        "X-Api-Key": api_key,
+    }
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.post(SEARCH_URL, headers=headers, json={
+            "q_organization_name": company_name,
+            "page": 1,
+            "per_page": 1,
+        })
+        response.raise_for_status()
+        orgs = response.json().get("organizations", [])
+
+    if not orgs:
+        logger.info(f"Apollo search: no organization found for '{company_name}'")
+        return None
+
+    domain = orgs[0].get("primary_domain")
+    if not domain:
+        logger.info(f"Apollo search: no domain found for '{company_name}'")
+        return None
+
+    logger.info(f"Apollo search: found domain '{domain}' for '{company_name}'")
+    return domain
 
 
 async def enrich_by_domain(domain: str, api_key: str) -> list[dict]:
