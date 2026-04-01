@@ -1,7 +1,23 @@
 from services.tier_taxonomy import get_taxonomy_for_prompt
 
 
-def vector_extraction_prompt(company_name: str, tavily_results: str) -> str:
+def domain_extraction_prompt(company_name: str, search_results: str) -> str:
+    return f"""Given the following research data about "{company_name}", identify the company's official website domain.
+
+Research data:
+{search_results}
+
+Rules:
+- Return ONLY the domain (e.g. nike.com, airbnb.com, myollie.com)
+- Do NOT include https://, www., or any path
+- If the company's website is mentioned or linked in the content, use that
+- If you cannot determine the domain with confidence, return "unknown"
+
+Return ONLY valid JSON with no other text:
+{{"domain": "example.com"}}"""
+
+
+def vector_extraction_prompt(company_name: str, search_results: str) -> str:
     taxonomy = get_taxonomy_for_prompt()
 
     return f"""You are an expert business analyst specializing in executive search and company analysis.
@@ -11,7 +27,7 @@ Given the following information about a company, identify its three core busines
 Company: {company_name}
 
 Research data:
-{tavily_results}
+{search_results}
 
 Identify exactly three things:
 1. Business Model — How the company primarily makes money
