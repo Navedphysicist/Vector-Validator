@@ -43,6 +43,7 @@ IMPORTANT:
 - Pick the most specific industry, not a broad category
 - Pick the primary transaction platform, not all channels
 - If the company has multiple models (e.g., subscription + retail), pick the one that drives the majority of revenue
+- B2B Field Services is for companies that dispatch crews/technicians to customer sites for service work (restoration, repair, maintenance, inspections). B2B Project-based is for companies hired to complete large discrete construction/engineering projects.
 
 Return ONLY valid JSON with no other text:
 {{"businessModel": "...", "industry": "...", "transactionPlatform": "..."}}"""
