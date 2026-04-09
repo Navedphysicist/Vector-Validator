@@ -34,6 +34,7 @@ export default function FeedbackSidebar({ open, onClose, items }: Props) {
                   <th className="px-4 py-3 font-medium text-gray-600">Correct?</th>
                   <th className="px-4 py-3 font-medium text-gray-600">Comment</th>
                   <th className="px-4 py-3 font-medium text-gray-600">User</th>
+                  <th className="px-4 py-3 font-medium text-gray-600">Date & Time</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -54,6 +55,7 @@ export default function FeedbackSidebar({ open, onClose, items }: Props) {
                     </td>
                     <td className="px-4 py-3 text-gray-600 max-w-48 truncate">{item.comment || "—"}</td>
                     <td className="px-4 py-3 text-gray-500">{item.user_name}</td>
+                    <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{new Date(item.created_at).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
